@@ -9,6 +9,7 @@ Created on Fri Dec 22 11:57:27 2017
 import pandas as pd
 import requests
 import csv
+import numpy as np
 #use beautiful soup to pull list of all north american tournaments
 #use median/mean length of game to show margin of victory
 
@@ -83,6 +84,8 @@ def historical_tournament_data(file):
         elif k['Winner'] == 'red':
             k['Winner'] = k['Red']
             k['Loser'] = k['Blue']
+    
+            
             
             
     
@@ -90,7 +93,25 @@ def historical_tournament_data(file):
 #Export as csv to modify in Tableau
 #Use Tournaments file that has list of tournaments from lol.gamepedia.com        
 test_na = historical_tournament_data('Tournaments.csv')
-test_na.to_excel('Test.xlsx', index=False)
+
+def no_k(gold):
+    if gold == 'k' or gold == '-':
+        gold = np.nan
+    else:
+        gold = float(gold[:-1])*1000
+    return gold
+def no_dash(item):
+    if item == '-':
+        item = np.nan
+    return item
+
+for name in ['Blue_Gold','Red_Gold','Diff_Gold']:
+    test_na[name] = test_na[name].apply(no_k)
+    
+for name in ['Patch','Diff_Kills', 'Diff_Towers', 'Diff_Dragons', 'Diff_Barons', 'Diff_RiftHerald']:
+    test_na[name] = test_na[name].apply(no_dash)
+    
+#test_na.to_excel('Test.xlsx', index=False)
 
 
 
