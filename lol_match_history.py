@@ -36,7 +36,7 @@ def historical_tournament_data(file):
         url_1 = 'https://lol.gamepedia.com/Special:RunQuery/MatchHistoryTournament?MHT%%5Btournament%%5D=Concept:' + placeholder +'&MHT%%5Btext%%5D=Yes&wpRunQuery=true'
         url_2 = url_1 % elements
         new_url = url_2.replace('%%','%')
-        print(new_url)
+        #print(new_url)
         header = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36",
         "X-Requested-With": "XMLHttpRequest"
@@ -51,15 +51,18 @@ def historical_tournament_data(file):
         #modify columns
         team_table.drop([0,len(team_table)-1], inplace=True)
         team_table.columns = team_table.iloc[0]
-        team_table = team_table.reset_index(drop=True)
+        team_table = team_table.reset_index()
         team_table = team_table.drop(0)
         team_table = team_table.drop(['SB','MH','VOD'], axis=1)
         team_table['Tournament'] = tourney
+        team_table[team_table.columns[0]] = team_table[team_table.columns[0]].values[::-1]
         all_region_tournaments.append(team_table)
+        print('Table read complete')
         
     #combine all tables
+    print('Combining all tables...')
     result = pd.concat(all_region_tournaments)
-    result.columns = ['Date','Patch','Blue', 'Red', 'Winner','Blue_Bans','Red_Bans', 
+    result.columns = ['Match of the Season','Date','Patch','Blue', 'Red', 'Winner','Blue_Bans','Red_Bans', 
 'Blue_Picks', 'Red_Picks', 'Blue_Roster', 'Red_Roster', 'Length',
 'Blue_Gold', 'Blue_Kills', 'Blue_Towers', 'Blue_Dragons', 'Blue_Barons',
 'Blue_RiftHerald', 'Red_Gold', 'Red_Kills', 'Red_Towers', 'Red_Dragons',
@@ -71,11 +74,12 @@ def historical_tournament_data(file):
 'Blue_Gold', 'Blue_Kills', 'Blue_Towers', 'Blue_Dragons', 'Blue_Barons',
 'Blue_RiftHerald', 'Red_Gold', 'Red_Kills', 'Red_Towers', 'Red_Dragons',
 'Red_Barons', 'Red_RiftHerald', 'Diff_Gold', 'Diff_Kills', 'Diff_Towers',
-'Diff_Dragons', 'Diff_Barons', 'Diff_RiftHerald', 'Tournament']]
+'Diff_Dragons', 'Diff_Barons', 'Diff_RiftHerald', 'Tournament', 'Match of the Season']]
     #modify format of columns to ascii characters
     result['Blue_Roster'] = [i.replace(' • ',',') for i in result['Blue_Roster']]
     result['Red_Roster'] = [i.replace(' • ',',') for i in result['Red_Roster']]
     result.reset_index(drop=True, inplace=True)
+    result['Match of the Season'] = result['Match of the Season'] - 1
     #Changer winner column to team name
     for i,k in result.iterrows():
         if k['Winner'] == 'blue':
@@ -84,6 +88,7 @@ def historical_tournament_data(file):
         elif k['Winner'] == 'red':
             k['Winner'] = k['Red']
             k['Loser'] = k['Blue']
+    print('Combination Complete')
     
             
             
@@ -111,7 +116,7 @@ for name in ['Blue_Gold','Red_Gold','Diff_Gold']:
 for name in ['Patch','Diff_Kills', 'Diff_Towers', 'Diff_Dragons', 'Diff_Barons', 'Diff_RiftHerald']:
     test_na[name] = test_na[name].apply(no_dash)
     
-#test_na.to_excel('Test.xlsx', index=False)
+test_na.to_excel('NALCS_History.xlsx', index=False)
 
 
 
